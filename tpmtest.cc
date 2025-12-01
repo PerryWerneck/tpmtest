@@ -70,16 +70,6 @@ static void genkey(const char *filename = "private.key", const char *password = 
 /// @param password The password for the private key
 static void gencsr(const char *filename = "private.key", const char *password = "password" ) {
 
-	auto bio = make_handle(BIO_new_file(get_filename(filename,"pub").c_str(), "r"), BIO_free_all);
-	if(!bio) {
-		throw runtime_error("Error opening public key file");
-	}
-
-	auto pkey = make_handle(PEM_read_bio_PUBKEY(bio.get(), NULL, NULL, NULL), EVP_PKEY_free);
-	if(!pkey) {
-		throw runtime_error("Error loading public key");
-	}
-
 	auto req = make_handle(X509_REQ_new(), X509_REQ_free);
 	if(!req) {
 		throw runtime_error("Error creating X509_REQ");
@@ -89,7 +79,20 @@ static void gencsr(const char *filename = "private.key", const char *password = 
 		throw runtime_error("Unable to set X509 version");
 	}
 
-	X509_REQ_set_pubkey(req.get(), pkey.get());
+	// Set pubkey
+	{
+		auto bio = make_handle(BIO_new_file(get_filename(filename,"pub").c_str(), "r"), BIO_free_all);
+		if(!bio) {
+			throw runtime_error("Error opening public key file");
+		}
+
+		auto pkey = make_handle(PEM_read_bio_PUBKEY(bio.get(), NULL, NULL, NULL), EVP_PKEY_free);
+		if(!pkey) {
+			throw runtime_error("Error loading public key");
+		}
+
+		X509_REQ_set_pubkey(req.get(), pkey.get());
+	}
 
 	// Set the subject name
 	struct {
@@ -119,8 +122,21 @@ static void gencsr(const char *filename = "private.key", const char *password = 
 	}
 
 	// Sign the request
-	if(X509_REQ_sign(req.get(), pkey.get(), EVP_sha256()) == 0) {
-		throw runtime_error("Error signing certificate request");
+	{
+		auto bio = make_handle(BIO_new_file(filename, "r"), BIO_free_all);
+		if(!bio) {
+			throw runtime_error("Error opening private key file");
+		}
+
+		auto pkey = make_handle(PEM_read_bio_PrivateKey(bio.get(), NULL, NULL, (void *) password), EVP_PKEY_free);
+		if(!pkey) {
+			throw runtime_error("Error loading private key");
+		}
+
+		if(X509_REQ_sign(req.get(), pkey.get(), EVP_sha256()) == 0) {
+			throw runtime_error("Error signing certificate request");
+		}
+
 	}
 
 	auto csrfile = make_handle(fopen(get_filename(filename,"csr").c_str(), "wb"), fclose);
