@@ -1,3 +1,6 @@
 .vscode
 private.key
 valgrind.suppression
+*.key
+*.pub
+*.csr
