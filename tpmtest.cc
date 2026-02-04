@@ -66,16 +66,18 @@ struct MainLoop {
 	}
 };
 
-static string get_filename(const char *private_key_path, const char *extension) {
+static string get_filename(const char *path, const char *extension = nullptr) {
 
-	string filename = string{private_key_path};
+	string filename = string{path};
 
-	// Replace extension...
-	auto pos = filename.find_last_of('.');
-	if(pos != string::npos) {
-		filename = filename.substr(0, pos) + "." + extension;
-	} else {
-		filename = filename + "." + extension;
+	if(extension) {
+		// Replace extension...
+		auto pos = filename.find_last_of('.');
+		if(pos != string::npos) {
+			filename = filename.substr(0, pos) + "." + extension;
+		} else {
+			filename = filename + "." + extension;
+		}
 	}
 
 	// .. and get full path.
@@ -229,9 +231,9 @@ static void throw_exception(GError *error) {
 }
 
 /// @brief Setup network manager
-/// @param filename The path to the private key file (certificate should be in the same path with .crt extension)
+/// @param privkey The path to the private key file (certificate should be in the same path with .crt extension)
 /// @param password The password for the private key
-static void netsetup(const char *filename = "private.key", const char *password = "password" ) {
+static void netsetup(const char *privkey = "private.key", const char *password = "password" ) {
 
 	// https://github.com/H-HChen/libnm_example/blob/main/example/add_ethernet_connection.cpp
 	// https://networkmanager.pages.freedesktop.org/NetworkManager/NetworkManager/NetworkManager.conf.html
@@ -301,7 +303,7 @@ static void netsetup(const char *filename = "private.key", const char *password 
 
 			nm_setting_802_1x_set_private_key(
 				s_8021x,
-				filename,
+				get_filename(privkey).c_str(),
 				password,
 				NM_SETTING_802_1X_CK_SCHEME_PATH,
 				&format,
@@ -342,7 +344,7 @@ static void netsetup(const char *filename = "private.key", const char *password 
 			GError *error = NULL;
 
 			nm_setting_802_1x_set_client_cert(s_8021x,
-				get_filename(filename,"crt").c_str(),
+				get_filename(privkey,"crt").c_str(),
 				NM_SETTING_802_1X_CK_SCHEME_PATH,
 				&format,
 				&error
@@ -369,6 +371,7 @@ static void netsetup(const char *filename = "private.key", const char *password 
 		}
 		*/
 
+
 		/*
 		for(const auto &eap : Config::Value<std::vector<std::string>>{"network-setup","eap","tls"}) {
 			if(!nm_setting_802_1x_add_eap_method(s_8021x,eap.c_str())) {
@@ -376,6 +379,10 @@ static void netsetup(const char *filename = "private.key", const char *password 
 			}
 		}
 		*/
+
+		if(!nm_setting_802_1x_add_eap_method(s_8021x,"tls")) {
+			throw runtime_error("Error adding eap method");
+		}
 
 		nm_connection_add_setting(connection, NM_SETTING(s_8021x));
 
