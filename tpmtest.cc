@@ -405,6 +405,15 @@ static void netsetup(const char *privkey = "private.key", const char *password =
 
 int main(int argc, char *argv[]) {
 
+	if(argc < 2) {
+		printf("Usage: %s <command>\n\n", argv[0]);
+		printf("Commands:\n\n");
+		printf("  genkey       Generate a private key using the TPM2 provider\n");
+		printf("  gencsr       Generate a CSR\n");
+		printf("  netsetup     Setup NetworkManager using the generated key and certificate\n\n");
+		return -1;
+	}
+
 	auto defprov = make_handle(OSSL_PROVIDER_load(NULL, "default"), OSSL_PROVIDER_unload);
 	if(!defprov) {
 		throw runtime_error("Error loading OSSL default provider");
@@ -413,15 +422,6 @@ int main(int argc, char *argv[]) {
 	auto tpm2prov = make_handle(OSSL_PROVIDER_load(NULL, "tpm2"), OSSL_PROVIDER_unload);
 	if(!tpm2prov) {
 		throw runtime_error("Error loading OSSL tpm2 provider");
-	}
-
-	if(argc < 2) {
-		printf("Usage: %s <command>\n", argv[0]);
-		printf("Commands:\n");
-		printf("  genkey       Generate a private key using the TPM2 provider\n");
-		printf("  gencsr       Generate a CSR\n");
-		printf("  netsetup     Setup NetworkManager using the generated key and certificate\n");
-		return 0;
 	}
 
 	string keyfile = string{getenv("HOSTNAME")}.append(".key");
