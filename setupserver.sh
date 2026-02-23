@@ -2,7 +2,7 @@
 
 setupca() {
 
-	mkdir /etc/wpa/certs
+	mkdir -p /etc/wpa/certs
 	
 	#
 	# Step 1 - Create the Certificate Authority (CA)
@@ -35,7 +35,7 @@ gencerts() {
 	openssl x509 -req -in /etc/wpa/certs/server.csr -CA /etc/wpa/certs/ca.crt -CAkey /etc/wpa/certs/ca.key -CAcreateserial -out /etc/wpa/certs/server.crt -days 365
 
 	ln -f /etc/wpa/certs/ca.crt 		/etc/hostapd.ca.pem
-	ln -f /etc/wpa/certs/server.csr		/etc/hostapd.server.pem
+	ln -f /etc/wpa/certs/server.crt		/etc/hostapd.server.pem
 	ln -f /etc/wpa/certs/server.key		/etc/hostapd.server.prv
 	
 }
