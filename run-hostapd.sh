@@ -5,10 +5,6 @@
 #
 netns="switch"
 
-netns_exec() {
-	ip netns exec $netns $@; 
-}
-
 setupca() {
 
 	#
@@ -109,17 +105,16 @@ EOT
 }
 
 setupnet() {
-	ip netns add $netns
-	netns_exec ip link set dev lo up
-	netns_exec ip a s
-	netns_exec ip link add name br0 type bridge group_fwd_mask 8
-	netns_exec ip link add name dummy0 type dummy
-	netns_exec ip link set dev dummy0 master br0
+	ip link set dev lo up
+	ip a s
+	ip link add name br0 type bridge group_fwd_mask 8
+	ip link add name dummy0 type dummy
+	ip link set dev dummy0 master br0
 	ip link add ven0 type veth peer name ven1 netns $netns
-	netns_exec ip link set dev ven1 master br0
-	netns_exec ip link set dev br0 up
-	netns_exec ip addr add dev br0 192.168.23.1/24
-	netns_exec ip link set dev ven1 up
+	ip link set dev ven1 master br0
+	ip link set dev br0 up
+	ip addr add dev br0 192.168.23.1/24
+	ip link set dev ven1 up
 	ip link set dev ven0 up
 }
 
