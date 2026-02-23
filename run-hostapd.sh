@@ -49,7 +49,15 @@ gencerts() {
 }
 
 setuphostapd() {
-	
+
+cat > /etc/hostapd.eap_user <<'EOT'
+# Specific client identity
+#"user@example.com"      TLS
+
+# Wildcard for any identity (rely solely on CA certificate validation)
+*                       TLS
+EOT
+
 cat > /etc/hostapd.conf <<'EOT'
 # General settings of hostapd
 # ===========================
@@ -75,25 +83,26 @@ driver=wired
 
 # Enable IEEE 802.1X authorization
 ieee8021x=1
+eap_server=1
+eap_user_file=/etc/hostapd.eap_user
 
 # Use port access entry (PAE) group address
 # (01:80:c2:00:00:03) when sending EAPOL frames
 use_pae_group_addr=1
 
-
 # Network interface for authentication requests
 interface=br0
 
+# WPA2-Enterprise Settings
+wpa=2
+wpa_key_mgmt=WPA-EAP
+rsn_pairwise=CCMP
 
-# RADIUS client configuration
-# ===========================
-
-# Local IP address used as NAS-IP-Address
-own_ip_addr=192.168.23.1
-
-# Unique NAS-Identifier within scope of RADIUS server
-nas_identifier=hostapd.example.org
-
+# TLS Certificate Paths
+ca_cert=/etc/hostapd.ca.pem
+server_cert=/etc/hostapd.server.pem
+private_key=/etc/hostapd.server.prv
+# private_key_passwd=### # Uncomment and set password if your key is encrypted
 
 EOT
 	
@@ -114,7 +123,6 @@ setupnet() {
 	ip link set dev ven0 up
 }
 
-
 if [ ! -e /etc/wpa/certs/ca.crt ]; then
 	setupca
 fi
@@ -123,6 +131,11 @@ if [ ! -e /etc/wpa/certs/server.key ]; then
 	gencerts
 fi
 
+setupnet
+setuphostapd
+
+# Start hostapd
+/usr/sbin/hostapd -dd -K /etc/hostapd.conf
 
 
 
