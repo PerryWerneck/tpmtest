@@ -3,7 +3,7 @@
 # SUSEConnect --product PackageHub/15.7/x86_64
 # zypper in hostapd
 #
-netns="switch"
+#netns="switch"
 
 setupca() {
 
@@ -110,7 +110,7 @@ setupnet() {
 	ip link add name br0 type bridge group_fwd_mask 8
 	ip link add name dummy0 type dummy
 	ip link set dev dummy0 master br0
-	ip link add ven0 type veth peer name ven1 netns $netns
+	ip link add ven0 type veth peer name ven1
 	ip link set dev ven1 master br0
 	ip link set dev br0 up
 	ip addr add dev br0 192.168.23.1/24
