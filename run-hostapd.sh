@@ -15,11 +15,13 @@ setupca() {
 	# Generate CA private key
 	openssl genrsa -out /etc/wpa/certs/ca.key 4096
 
-	# Create CA certificate request
- 	openssl req -new -key /etc/wpa/certs/ca.key -out /etc/wpa/certs/ca.csr
-
-	# Sign CA certificate 
-    	openssl x509 -req -days 365 -in /etc/wpa/certs/ca.csr -signkey /etc/wpa/certs/ca.key -out /etc/wpa/certs/ca.crt
+	# Create CA certificate
+	openssl req \
+		-new -x509 -days 3650 \
+		-key /etc/wpa/certs/ca.key \
+		-out /etc/wpa/certs/ca.pem \
+		-subj "/C=US/ST=State/L=City/O=MyNetwork/CN=TPMTest CA" \
+		-addext "basicConstraints=critical,CA:TRUE"	
 
 }
 
@@ -79,6 +81,11 @@ driver=wired
 
 # Enable IEEE 802.1X authorization
 ieee8021x=1
+eapol_version=2
+wpa=2
+wpa_key_mgmt=WPA-EAP
+wpa_pairwise=CCMP
+rsn_pairwise=CCMP
 eap_server=1
 eap_user_file=/etc/hostapd.eap_user
 

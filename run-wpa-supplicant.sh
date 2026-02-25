@@ -19,6 +19,7 @@ network={
     key_mgmt=IEEE8021X
     eap=TLS
     identity="tpmtest"
+	ca_cert="/etc/wpa/certs/ca.crt"
     client_cert="/etc/wpa/client/tpmtest.crt"
     private_key="/etc/wpa/client/tpmtest.key"
     private_key_passwd="password"
