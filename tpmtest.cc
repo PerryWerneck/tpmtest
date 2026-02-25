@@ -32,6 +32,7 @@
 #include <openssl/provider.h>
 #include <openssl/store.h>
 #include <openssl/ui.h>
+#include <openssl/x509v3.h>
 
 #include <NetworkManager.h>
 #include <cstring>
@@ -117,6 +118,15 @@ static void genkey(const char *filename = "private.key",
   }
 }
 
+static void add_extension(STACK_OF(X509_EXTENSION) *exts, int nid, const char *value) {
+  X509_EXTENSION *ex = X509V3_EXT_conf_nid(NULL,NULL,nid,value);
+  if (!ex) {
+    throw runtime_error("Error creating extension");
+  }
+
+  sk_X509_EXTENSION_push(exts, ex); 
+}
+
 /// @brief Generate CSR
 /// @param filename The path to the private key file
 /// @param password The password for the private key
@@ -167,6 +177,22 @@ static void gencsr(const char *filename = "private.key",
 
   if (X509_REQ_set_subject_name(req.get(), name) != 1) {
     throw runtime_error("Error setting subject name");
+  }
+
+  // X509v3 extensions
+  // X509_EXTENSION *ext;
+  // ext = X509_EXTENSION_create_by_NID(NULL, NID_subject_alt_name, 0, NULL);
+  // X509_REQ_add_ext(req.get(), ext, -1);
+  // X509_EXTENSION_free(ext);
+  {
+    auto exts = sk_X509_EXTENSION_new_null();
+
+    add_extension(exts, NID_key_usage, "critical, digitalSignature, keyEncipherment, dataEncipherment");
+
+    // add_extension(exts,NID_subject_alt_name,"DNS:tpmtest.example.com");
+
+    X509_REQ_add_extensions(req.get(), exts);
+    sk_X509_EXTENSION_pop_free(exts, X509_EXTENSION_free ); 
   }
 
   // Sign the request

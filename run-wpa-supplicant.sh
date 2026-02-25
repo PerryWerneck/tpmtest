@@ -1,5 +1,7 @@
 #!/bin/bash
 
+systemctl stop wpa_supplicant
+
 mkdir -p /etc/wpa/client
 cd /etc/wpa/client
 if [ "$?" != "0" ]; then
