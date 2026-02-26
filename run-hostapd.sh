@@ -19,7 +19,7 @@ setupca() {
 	openssl req \
 		-new -x509 -days 3650 \
 		-key /etc/wpa/certs/ca.key \
-		-out /etc/wpa/certs/ca.pem \
+		-out /etc/wpa/certs/ca.crt \
 		-subj "/C=US/ST=State/L=City/O=MyNetwork/CN=TPMTest CA" \
 		-addext "basicConstraints=critical,CA:TRUE"	
 
@@ -39,10 +39,6 @@ gencerts() {
 
 	# Sign the server CSR with your CA
 	openssl x509 -req -in /etc/wpa/server/server.csr -CA /etc/wpa/certs/ca.crt -CAkey /etc/wpa/certs/ca.key -CAcreateserial -out /etc/wpa/server/server.crt -days 365
-
-	ln -f /etc/wpa/certs/ca.crt /etc/hostapd.ca.pem
-	ln -f /etc/wpa/server/server.crt /etc/hostapd.server.pem
-	ln -f /etc/wpa/server/server.key /etc/hostapd.server.prv
 	
 }
 
@@ -129,8 +125,23 @@ if [ ! -e /etc/wpa/certs/ca.crt ]; then
 	setupca
 fi
 
-if [ ! -e /etc/wpa/certs/server.key ]; then
+if [ ! -e /etc/wpa/server/server.key ]; then
 	gencerts
+fi
+
+ln -f /etc/wpa/certs/ca.crt /etc/hostapd.ca.pem
+if [ "$?" != 0 ]; then
+	exit -1
+fi
+
+ln -f /etc/wpa/server/server.crt /etc/hostapd.server.pem
+if [ "$?" != 0 ]; then
+	exit -1
+fi
+
+ln -f /etc/wpa/server/server.key /etc/hostapd.server.prv
+if [ "$?" != 0 ]; then
+	exit -1
 fi
 
 setupnet
