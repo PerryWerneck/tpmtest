@@ -32,17 +32,17 @@ gencerts() {
 	#
 
 	# Generate server private key
-	openssl genrsa -out /etc/wpa/certs/server.key 4096
+	openssl genrsa -out /etc/wpa/server/server.key 4096
 
 	# Create a certificate signing request (CSR) for the server
-	openssl req -new -key /etc/wpa/certs/server.key -out /etc/wpa/certs/server.csr
+	openssl req -new -key /etc/wpa/server/server.key -out /etc/wpa/server/server.csr
 
 	# Sign the server CSR with your CA
-	openssl x509 -req -in /etc/wpa/certs/server.csr -CA /etc/wpa/certs/ca.crt -CAkey /etc/wpa/certs/ca.key -CAcreateserial -out /etc/wpa/certs/server.crt -days 365
+	openssl x509 -req -in /etc/wpa/server/server.csr -CA /etc/wpa/certs/ca.crt -CAkey /etc/wpa/certs/ca.key -CAcreateserial -out /etc/wpa/server/server.crt -days 365
 
 	ln -f /etc/wpa/certs/ca.crt /etc/hostapd.ca.pem
-	ln -f /etc/wpa/certs/server.crt /etc/hostapd.server.pem
-	ln -f /etc/wpa/certs/server.key /etc/hostapd.server.prv
+	ln -f /etc/wpa/server/server.crt /etc/hostapd.server.pem
+	ln -f /etc/wpa/server/server.key /etc/hostapd.server.prv
 	
 }
 
