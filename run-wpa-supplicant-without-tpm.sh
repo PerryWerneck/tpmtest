@@ -38,7 +38,7 @@ if [ ! -e /etc/wpa/client/client.csr ]; then
 	cd /etc/wpa/client
 	rm -f client.*
 	openssl req -new -newkey rsa:4096 -nodes -keyout /etc/wpa/client/client.key -out /etc/wpa/client/client.csr -sha256
-	openssl rsa -engine tpm2tss -inform engine -in "/etc/wpa/client/client.key" -noout -modulus | openssl md5
+	openssl rsa -in "/etc/wpa/client/client.key" -noout -modulus | openssl md5
 	openssl req -noout -modulus -in client.csr | openssl md5
 fi
 
