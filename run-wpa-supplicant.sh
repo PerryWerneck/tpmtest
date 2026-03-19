@@ -40,6 +40,9 @@ if [ ! -e /etc/wpa/client/tpmtest.key ]; then
 	if [ "$?" != "0" ]; then
 		exit 1
 	fi
+	openssl rsa -engine tpm2tss -inform engine -in "/etc/wpa/client/tpmtest.key" -noout -modulus | openssl md5
+	openssl req -noout -modulus -in tpmtest.csr | openssl md5
+
 fi
 
 if [ ! -e /etc/wpa/client/tpmtest.crt ]; then
