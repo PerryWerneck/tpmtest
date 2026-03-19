@@ -5,6 +5,11 @@
 #
 #netns="switch"
 
+if [ "${UID}" != "0" ]; then
+	sudo $0 $@
+	exit $?
+fi
+
 setupca() {
 
 	#
@@ -148,7 +153,7 @@ setupnet
 setuphostapd
 
 # Start hostapd
-/usr/sbin/hostapd -dd -K /etc/hostapd.conf
+/usr/sbin/hostapd -dd -K /etc/hostapd.conf | tee /var/log/hostapd.log
 
 
 

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "${UID}" != "0" ]; then
+	sudo $0 $@
+	exit $?
+fi
+
 systemctl stop wpa_supplicant
 
 mkdir -p /etc/wpa/client
@@ -39,7 +44,9 @@ fi
 
 if [ ! -e /etc/wpa/client/tpmtest.crt ]; then
 	cd /etc/wpa/client
-	openssl x509 -req -in tpmtest.csr -CA /etc/wpa/certs/ca.crt -CAkey /etc/wpa/certs/ca.key -CAcreateserial -out tpmtest.crt -days 365 -sha256
+	
+	# Sign the server CSR with your CA
+	openssl x509 -req -in /etc/wpa/client/tpmtest.csr -CA /etc/wpa/certs/ca.crt -CAkey /etc/wpa/certs/ca.key -CAcreateserial -out /etc/wpa/client/tpmtest.crt -days 365
 	if [ "$?" != "0" ]; then
 		exit 1
 	fi
